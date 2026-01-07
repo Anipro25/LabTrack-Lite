@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: labtrack-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-labtrack}
+      POSTGRES_USER: ${POSTGRES_USER:-labtrack}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-labtrackpass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - labtrack-net
+
+  pgadmin:
+    image: dpage/pgadmin4:8.13
+    container_name: labtrack-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@labtrack.local
+      PGADMIN_DEFAULT_PASSWORD: adminpass
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - labtrack-net
+
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    container_name: labtrack-api
+    env_file:
+      - ../.env
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: http://0.0.0.0:5000
+      ConnectionStrings__Default: Host=db;Port=5432;Database=${POSTGRES_DB:-labtrack};Username=${POSTGRES_USER:-labtrack};Password=${POSTGRES_PASSWORD:-labtrackpass}
+      JWT__Issuer: ${JWT_ISSUER:-labtrack-lite}
+      JWT__Audience: ${JWT_AUDIENCE:-labtrack-lite-clients}
+      JWT__SigningKey: ${JWT_SIGNING_KEY}
+      JWT__ExpiresMinutes: ${JWT_EXPIRES_MINUTES:-60}
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    networks:
+      - labtrack-net
+
+networks:
+  labtrack-net:
+    driver: bridge
+
+volumes:
+  db_data:

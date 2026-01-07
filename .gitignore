@@ -1,0 +1,34 @@
+# Build
+bin/
+obj/
+**/bin/
+**/obj/
+
+# User-specific
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Logs
+*.log
+logs/
+
+# ASP.NET
+appsettings.Local.json
+
+# Node
+node_modules/
+web/node_modules/
+web/dist/
+web/.vite/
+
+# Env
+.env
+.env.*
+**/*.env
+
+# IDE
+.vscode/
+.idea/
+*.DS_Store
