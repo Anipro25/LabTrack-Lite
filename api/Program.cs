@@ -115,20 +115,24 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapPost("/api/auth/login", (LoginRequest req) =>
+app.MapPost("/api/auth/login", async (AppDbContext db, LoginRequest req) =>
 {
-    if (string.IsNullOrEmpty(req.Email) || string.IsNullOrEmpty(req.Role))
-        return Results.BadRequest("Email and role required");
+    if (string.IsNullOrEmpty(req.Email) || string.IsNullOrEmpty(req.Password))
+        return Results.BadRequest("Email and password required");
 
-    // Parse role string to enum
-    if (!Enum.TryParse<Role>(req.Role, ignoreCase: true, out var role))
-        return Results.BadRequest($"Invalid role: {req.Role}. Must be Admin, Engineer, or Technician");
+    var user = await db.Users.FirstOrDefaultAsync(u => u.Email == req.Email);
+    if (user is null)
+        return Results.Unauthorized();
+
+    var ok = LabTrack.Api.Security.PasswordHasher.Verify(req.Password, user.PasswordHash);
+    if (!ok)
+        return Results.Unauthorized();
 
     var claims = new List<Claim>
     {
-        new Claim(JwtRegisteredClaimNames.Sub, req.Email),
-        new Claim(ClaimTypes.Role, role.ToString()),
-        new Claim("name", req.Email)
+        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+        new Claim(ClaimTypes.Role, user.Role.ToString()),
+        new Claim("name", user.Name)
     };
 
     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
@@ -338,7 +342,7 @@ app.MapGet("/api/chatbot", async (string q, AppDbContext db) =>
 
 app.Run();
 
-record LoginRequest(string Email, string Role);
+record LoginRequest(string Email, string Password);
 record CreateAssetRequest(string Name, string? Code, string? Location, string? Category, string? Description);
 record UpdateAssetRequest(string? Name, string? Code, string? Location, string? Category, string? Description);
 record CreateTicketRequest(string Title, string? Description, Guid AssetId);

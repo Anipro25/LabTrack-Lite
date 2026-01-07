@@ -15,7 +15,7 @@ public static class SeedData
             Email = "admin@example.com",
             Name = "Admin User",
             Role = Role.Admin,
-            PasswordHash = "hashed_password_demo"
+            PasswordHash = LabTrack.Api.Security.PasswordHasher.Hash("Admin@123")
         };
 
         var engineer = new User
@@ -24,7 +24,7 @@ public static class SeedData
             Email = "engineer@example.com",
             Name = "Engineer User",
             Role = Role.Engineer,
-            PasswordHash = "hashed_password_demo"
+            PasswordHash = LabTrack.Api.Security.PasswordHasher.Hash("Engineer@123")
         };
 
         var tech = new User
@@ -33,7 +33,7 @@ public static class SeedData
             Email = "tech@example.com",
             Name = "Technician User",
             Role = Role.Technician,
-            PasswordHash = "hashed_password_demo"
+            PasswordHash = LabTrack.Api.Security.PasswordHasher.Hash("Tech@123")
         };
 
         context.Users.AddRange(admin, engineer, tech);

@@ -11,8 +11,8 @@ const statusPalette = {
 
 function useAuth() {
   const [token, setToken] = useState(localStorage.getItem('jwt') || '')
-  const login = async (email, role) => {
-    const res = await axios.post('/api/auth/login', { email, role })
+  const login = async (email, password) => {
+    const res = await axios.post('/api/auth/login', { email, password })
     localStorage.setItem('jwt', res.data.token)
     setToken(res.data.token)
   }
@@ -463,7 +463,7 @@ function Chatbot() {
 
 function Login({ login }) {
   const [email, setEmail] = useState('admin@example.com')
-  const [role, setRole] = useState('Admin')
+  const [password, setPassword] = useState('Admin@123')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
@@ -471,7 +471,7 @@ function Login({ login }) {
     e.preventDefault()
     setLoading(true)
     try {
-      await login(email, role)
+      await login(email, password)
       navigate('/')
     } finally {
       setLoading(false)
@@ -487,12 +487,8 @@ function Login({ login }) {
           <input className="input" value={email} onChange={e => setEmail(e.target.value)} type="email" required />
         </label>
         <label className="label">
-          <span>Role</span>
-          <select className="input" value={role} onChange={e => setRole(e.target.value)} aria-label="Role">
-            <option>Admin</option>
-            <option>Engineer</option>
-            <option>Technician</option>
-          </select>
+          <span>Password</span>
+          <input className="input" value={password} onChange={e => setPassword(e.target.value)} type="password" required />
         </label>
         <button className="btn" type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</button>
       </form>
